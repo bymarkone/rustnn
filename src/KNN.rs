@@ -2,16 +2,16 @@ use ndarray::prelude::*;
 use std::time::Instant;
 
 pub struct KNN {
-  x_train: Vec<Array2<u8>>,
-  y_train: Vec<u8>,
+  x_train: Array2<u8>,
+  y_train: Array1<u8>,
 }
 
 impl KNN {
   pub fn new() -> KNN {
-    KNN {x_train: Vec::new(), y_train: Vec::new()}
+    KNN {x_train: Array::zeros((0,0)), y_train: Array::zeros(0)}
   }
 
-  pub fn train(self, x_train: Vec<Array2<u8>>, y_train: Vec<u8>) -> KNN {
+  pub fn train(self, x_train: Array2<u8>, y_train: Array1<u8>) -> KNN {
     KNN {x_train, y_train}
   }
 
@@ -19,10 +19,10 @@ impl KNN {
     println!("Training dim {:?}", self.x_train.len());
     println!("Data dimensions {:?}", input.len());
 
-    let now = Instant::now();
+    //let now = Instant::now();
   
-    let transposed = self.x_train.transpose();
-    println!("Transposed shape {:?} {:?}", transposed.shape, now.elapsed().as_millis());
+    //let transposed = self.x_train.transpose();
+    //println!("Transposed shape {:?} {:?}", transposed.shape, now.elapsed().as_millis());
     
     //let first = &input * transposed;
     //println!("Dotted shape {:?} {:?}", first.shape, now.elapsed().as_millis());

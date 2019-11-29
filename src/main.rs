@@ -1,10 +1,10 @@
+use rustnn::mnist;
 use rustnn::knn::KNN;
-use rustnn::knn::data;
 
 fn main() {
-  let (x_train, y_train) = data::load();
+  let (x_train, y_train) = mnist::load();
   
-  let knn = knn::new();
+  let knn = KNN::new();
   knn.train(x_train, y_train);
 }
  
