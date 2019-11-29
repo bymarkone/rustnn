@@ -15,14 +15,14 @@ impl KNN {
     KNN {x_train, y_train}
   }
 
-  pub fn predict(self, input: Vec<Array2<u8>>) {
+  pub fn predict(self, input: Array2<u8>) {
     println!("Training dim {:?}", self.x_train.len());
     println!("Data dimensions {:?}", input.len());
 
-    //let now = Instant::now();
+    let now = Instant::now();
   
-    //let transposed = self.x_train.transpose();
-    //println!("Transposed shape {:?} {:?}", transposed.shape, now.elapsed().as_millis());
+    let transposed = self.x_train.reversed_axes();
+    println!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
     
     //let first = &input * transposed;
     //println!("Dotted shape {:?} {:?}", first.shape, now.elapsed().as_millis());
