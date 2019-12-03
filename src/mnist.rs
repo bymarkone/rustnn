@@ -3,12 +3,12 @@ use std::io::{Read, Result};
 use std::fs::File;
 use byteorder::{ReadBytesExt, BigEndian};
 
-pub fn load() -> (Array2<f32>, Array1<f32>, Array2<f32>, Array1<f32>) {
+pub fn load(train_size: usize, test_size: usize) -> (Array2<f32>, Array1<f32>, Array2<f32>, Array1<f32>) {
   return (
-    load_images("./data/train-images-idx3-ubyte", 10000).unwrap(), 
-    load_labels("./data/train-labels-idx1-ubyte", 10000).unwrap(),
-    load_images("./data/t10k-images-idx3-ubyte", 1000).unwrap(), 
-    load_labels("./data/t10k-labels-idx1-ubyte", 1000).unwrap(),
+    load_images("./data/train-images-idx3-ubyte", train_size).unwrap(), 
+    load_labels("./data/train-labels-idx1-ubyte", train_size).unwrap(),
+    load_images("./data/t10k-images-idx3-ubyte", test_size).unwrap(), 
+    load_labels("./data/t10k-labels-idx1-ubyte", test_size).unwrap(),
   );
 }
 

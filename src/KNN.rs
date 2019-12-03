@@ -20,23 +20,25 @@ impl KNN {
     println!("Data dimensions {:?}", input.len());
 
     let now = Instant::now();
-  
-    let transposed = self.x_train.reversed_axes();
+
+    // -2xy 
+    let transposed = self.x_train.t();
     println!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
-    
     let first = input.dot(&transposed);
     println!("Dotted shape {:?} {:?}", first.dim(), now.elapsed().as_millis());
-
-    //let first = first * -2.0;
-    //println!("Escalar multiplication {:?}", now.elapsed().as_millis());
+    let first = first * -2.0;
+    println!("Escalar multiplication {:?}", now.elapsed().as_millis());
     
-    //let second = self.x_train.map(|e| e * e);
-    //let second = second.column_sum();
-    //println!("Train input squared {:?} {:?}", second.shape, now.elapsed().as_millis());
+    // x^2
+    let second = self.x_train.map(|e| e * e).sum_axis(Axis(1));
+    println!("Train input squared {:?} {:?}", second.dim(), now.elapsed().as_millis());
     
-    //let third = input.map(|e| e * e);
-    //let third = third.column_sum();
-    //println!("Test input squared {:?} {:?}", third.shape, now.elapsed().as_millis())
-    
+    // y^2
+    let third = input.map(|e| e * e).sum_axis(Axis(1)).insert_axis(Axis(1));
+    println!("Test input squared {:?} {:?}", third.dim(), now.elapsed().as_millis());
+     
+    // (x-y)^2 = -2xy + x^2 +y^2
+    let result = first + second + third; 
+    println!("Result {:?} {:?}", result.dim(), now.elapsed().as_millis())
   }
 }
