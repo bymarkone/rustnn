@@ -2,8 +2,8 @@ use ndarray::prelude::*;
 use std::time::Instant;
 
 pub struct KNN {
-  x_train: Array2<u8>,
-  y_train: Array1<u8>,
+  x_train: Array2<f32>,
+  y_train: Array1<f32>,
 }
 
 impl KNN {
@@ -11,11 +11,11 @@ impl KNN {
     KNN {x_train: Array::zeros((0,0)), y_train: Array::zeros(0)}
   }
 
-  pub fn train(self, x_train: Array2<u8>, y_train: Array1<u8>) -> KNN {
+  pub fn train(self, x_train: Array2<f32>, y_train: Array1<f32>) -> KNN {
     KNN {x_train, y_train}
   }
 
-  pub fn predict(self, input: Array2<u8>) {
+  pub fn predict(self, input: Array2<f32>) {
     println!("Training dim {:?}", self.x_train.len());
     println!("Data dimensions {:?}", input.len());
 
@@ -24,8 +24,8 @@ impl KNN {
     let transposed = self.x_train.reversed_axes();
     println!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
     
-    //let first = &input * transposed;
-    //println!("Dotted shape {:?} {:?}", first.shape, now.elapsed().as_millis());
+    let first = input.dot(&transposed);
+    println!("Dotted shape {:?} {:?}", first.dim(), now.elapsed().as_millis());
 
     //let first = first * -2.0;
     //println!("Escalar multiplication {:?}", now.elapsed().as_millis());
