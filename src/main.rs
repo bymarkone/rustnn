@@ -11,6 +11,6 @@ fn main() {
   let knn = KNN::new();
   let knn = knn.train(x_train, y_train);
 
-  knn.predict(x_test);
+  knn.predict(x_test, y_test);
 }
  
