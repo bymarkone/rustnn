@@ -1,6 +1,7 @@
 use ndarray::prelude::*;
 use ndarray::SliceInfo;
 use std::time::Instant;
+use std::cmp::Ordering::Equal;
 
 pub struct KNN {
   x_train: Array2<f32>,
@@ -8,10 +9,10 @@ pub struct KNN {
 }
 
 fn count(e: &usize, list: &Array1<f32>) -> usize {
-  return 0;
+  return list.iter().filter(|f| (**f).eq(&(*e as f32))).count();
 }
 
-fn max(list: Vec<usize>) -> f32 {
+fn argmax(list: Vec<usize>) -> f32 {
   return 0.0;
 }
 
@@ -62,15 +63,20 @@ impl KNN {
     let mut y_pred: Vec<f32> = Vec::new();
  
     for i in 0..dim.0 {
+
       let row = dists.index_axis(Axis(0), i);
+
       let mut argsorted = row.iter().enumerate().collect::<Vec<_>>().to_vec();
-      argsorted.sort_by(|a,b| a.0.cmp(&b.0));
+      argsorted.sort_by(|a,b| a.1.partial_cmp(&b.1).unwrap_or(Equal));
       let sorted_indexes = Array::from(argsorted.iter().map(|(a,b)| a).collect::<Vec<&usize>>());
+
       let sorted_indexes_sliced = sorted_indexes.slice(s![..1]);
+
       let closest_labels = sorted_indexes_sliced.map(|e| self.y_train[**e]);
 
-      let bincount = vec![0,1,2].into_iter().map(|e| count(&e, &closest_labels)).collect::<Vec<usize>>();
-      y_pred.push(max(bincount));
+      let bincount = (0..9).into_iter().map(|e| count(&e, &closest_labels)).collect::<Vec<usize>>();
+      println!("Count is {:?}", bincount);
+      y_pred.push(closest_labels[0]);
       
     }
     return Array::from(y_pred);

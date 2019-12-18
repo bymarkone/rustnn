@@ -17,6 +17,7 @@ fn load_labels(filename: &str, size: usize) -> Result<Array1<f32>> {
   
   let magic_nr = file.read_u32::<BigEndian>()?;
   assert!(magic_nr == 0x0801);
+
   let nelems = file.read_u32::<BigEndian>()? as usize;
   let nelems = size;
   assert!(nelems > 0);
