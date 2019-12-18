@@ -7,55 +7,47 @@ use std::cmp::Ordering::Equal;
 pub struct KNN {
   x_train: Array2<f32>,
   y_train: Array1<f32>,
+  k: usize,
 }
 
 fn count(e: &usize, list: &Array1<f32>) -> usize {
   return list.iter().filter(|f| (**f).eq(&(*e as f32))).count();
 }
 
-fn argmax(list: Vec<usize>) -> f32 {
-  return 0.0;
-}
-
 impl KNN {
-  pub fn new() -> KNN {
-    KNN {x_train: Array::zeros((0,0)), y_train: Array::zeros(0)}
+  pub fn new(k: usize) -> KNN {
+    KNN {x_train: Array::zeros((0,0)), y_train: Array::zeros(0), k}
   }
 
   pub fn train(self, x_train: Array2<f32>, y_train: Array1<f32>) -> KNN {
-    KNN {x_train, y_train}
+    KNN {x_train, y_train, k: self.k}
   }
 
   pub fn predict(self, input: Array2<f32>, labels: Array1<f32>) {
     info!("Training dim {:?}", self.x_train.dim());
     info!("Test dimensions {:?}", input.len());
-
     let now = Instant::now();
 
-    // -2xy 
-    let transposed = self.x_train.t();
-    debug!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
-    let first = input.dot(&transposed);
-    debug!("Dotted shape {:?} {:?}", first.dim(), now.elapsed().as_millis());
-    let first = first * -2.0;
-    debug!("Escalar multiplication {:?}", now.elapsed().as_millis());
+    let first = input.dot(&self.x_train.t()) * -2.0;
+    debug!("Computed -2xy, result dimesions is {:?} (time: {:?})", first.dim(), now.elapsed().as_millis());
     
-    // x^2
     let second = self.x_train.map(|e| e * e).sum_axis(Axis(1));
-    debug!("Train input squared {:?} {:?}", second.dim(), now.elapsed().as_millis());
+    debug!("Computed x^2, result dimension is {:?} (time: {:?})", second.dim(), now.elapsed().as_millis());
     
-    // y^2
     let third = input.map(|e| e * e).sum_axis(Axis(1)).insert_axis(Axis(1));
-    debug!("Test input squared {:?} {:?}", third.dim(), now.elapsed().as_millis());
+    debug!("Computed y^2, result dimension is {:?} (time: {:?})", third.dim(), now.elapsed().as_millis());
      
-    // (x-y)^2 = -2xy + x^2 +y^2
     let result = first + second + third; 
-    debug!("Result {:?} {:?}", result.dim(), now.elapsed().as_millis());
+    debug!("Computed (x-y)^2 = -2xy + x^2 + y^2, result dimension is {:?} (time: {:?})", result.dim(), now.elapsed().as_millis());
 
     let predicted = self.predict_labels(result);
+
     let matching = predicted.iter().zip(&labels).filter(|&(a, b)| a == b).count();
-    info!("Accuracy is {:?}%", matching);
-    
+
+    debug!("Sample labels: {:?}", labels.slice(s![0..20]));
+    debug!("Sample predicted: {:?}", predicted.slice(s![0..20]));
+
+    info!("Accuracy is {:?} of {:?} ({:?}%)", matching, labels.len(), matching as f32 * 100.0 / labels.len() as f32);
   }
 
   fn predict_labels(self, dists: Array2<f32>) -> Array1<f32> {
@@ -69,15 +61,23 @@ impl KNN {
 
       let mut argsorted = row.iter().enumerate().collect::<Vec<_>>().to_vec();
       argsorted.sort_by(|a,b| a.1.partial_cmp(&b.1).unwrap_or(Equal));
-      let sorted_indexes = Array::from(argsorted.iter().map(|(a,b)| a).collect::<Vec<&usize>>());
+      let sorted_indexes = Array::from(argsorted.iter().map(|(a,_)| a).collect::<Vec<&usize>>());
 
-      let sorted_indexes_sliced = sorted_indexes.slice(s![..1]);
+      let sorted_indexes_sliced = sorted_indexes.slice(s![..self.k]);
 
       let closest_labels = sorted_indexes_sliced.map(|e| self.y_train[**e]);
 
-      let bincount = (0..9).into_iter().map(|e| count(&e, &closest_labels)).collect::<Vec<usize>>();
+      let bincount = (0..10)
+          .into_iter()
+          .map(|e| count(&e, &closest_labels))
+          .enumerate()
+          .map(|(x, y)| (y, x))
+          .max()
+          .unwrap()
+          .1;
+
       debug!("Count is {:?}", bincount);
-      y_pred.push(closest_labels[0]);
+      y_pred.push(bincount as f32);
       
     }
     return Array::from(y_pred);
