@@ -1,3 +1,4 @@
+use log::{info};
 use ndarray::prelude::*;
 use std::io::{Read, Result};
 use std::fs::File;
@@ -25,7 +26,7 @@ fn load_labels(filename: &str, size: usize) -> Result<Array1<f32>> {
   let labels = Array::from_shape_vec(nelems, file.bytes().take(size).map(Result::unwrap).map(|x| x as f32).collect()).unwrap();
 
   assert!(labels.len() == size);
-  println!("Found {} labels", labels.len());
+  info!("Found {} labels", labels.len());
 
   return Ok(labels);
 }
@@ -56,7 +57,7 @@ fn load_images(filename: &str, size: usize) -> Result<Array2<f32>> {
   let images = Array2::from_shape_vec((nimages, nrows * ncols), buf.to_vec().into_iter().map(|x| x as f32).collect()).unwrap();
 
   assert!(images.dim() == (nimages, nrows * ncols));
-  println!("Found {:?} images", images.dim());
+  info!("Found {:?} images", images.dim());
   
   return Ok(images);
 }

@@ -1,5 +1,6 @@
+use log::{info,debug};
+
 use ndarray::prelude::*;
-use ndarray::SliceInfo;
 use std::time::Instant;
 use std::cmp::Ordering::Equal;
 
@@ -26,34 +27,34 @@ impl KNN {
   }
 
   pub fn predict(self, input: Array2<f32>, labels: Array1<f32>) {
-    println!("Training dim {:?}", self.x_train.dim());
-    println!("Test dimensions {:?}", input.len());
+    info!("Training dim {:?}", self.x_train.dim());
+    info!("Test dimensions {:?}", input.len());
 
     let now = Instant::now();
 
     // -2xy 
     let transposed = self.x_train.t();
-    println!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
+    debug!("Transposed shape {:?} {:?}", transposed.dim(), now.elapsed().as_millis());
     let first = input.dot(&transposed);
-    println!("Dotted shape {:?} {:?}", first.dim(), now.elapsed().as_millis());
+    debug!("Dotted shape {:?} {:?}", first.dim(), now.elapsed().as_millis());
     let first = first * -2.0;
-    println!("Escalar multiplication {:?}", now.elapsed().as_millis());
+    debug!("Escalar multiplication {:?}", now.elapsed().as_millis());
     
     // x^2
     let second = self.x_train.map(|e| e * e).sum_axis(Axis(1));
-    println!("Train input squared {:?} {:?}", second.dim(), now.elapsed().as_millis());
+    debug!("Train input squared {:?} {:?}", second.dim(), now.elapsed().as_millis());
     
     // y^2
     let third = input.map(|e| e * e).sum_axis(Axis(1)).insert_axis(Axis(1));
-    println!("Test input squared {:?} {:?}", third.dim(), now.elapsed().as_millis());
+    debug!("Test input squared {:?} {:?}", third.dim(), now.elapsed().as_millis());
      
     // (x-y)^2 = -2xy + x^2 +y^2
     let result = first + second + third; 
-    println!("Result {:?} {:?}", result.dim(), now.elapsed().as_millis());
+    debug!("Result {:?} {:?}", result.dim(), now.elapsed().as_millis());
 
     let predicted = self.predict_labels(result);
     let matching = predicted.iter().zip(&labels).filter(|&(a, b)| a == b).count();
-    println!("Accuracy is {:?}%", matching);
+    info!("Accuracy is {:?}%", matching);
     
   }
 
@@ -75,7 +76,7 @@ impl KNN {
       let closest_labels = sorted_indexes_sliced.map(|e| self.y_train[**e]);
 
       let bincount = (0..9).into_iter().map(|e| count(&e, &closest_labels)).collect::<Vec<usize>>();
-      println!("Count is {:?}", bincount);
+      debug!("Count is {:?}", bincount);
       y_pred.push(closest_labels[0]);
       
     }
