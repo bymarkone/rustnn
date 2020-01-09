@@ -1,0 +1,4 @@
+- Implement SVM
+- Implement Softmax
+- Implement NN
+- Write first chapter
